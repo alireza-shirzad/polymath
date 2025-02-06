@@ -9,10 +9,11 @@ use ark_relations::{
     lc,
     r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
 };
+use ark_serialize::{CanonicalSerialize, Compress};
 use ark_std::{test_rng, UniformRand};
 // For randomness (during paramgen and proof generation)
 use ark_std::rand::{RngCore, SeedableRng};
-use sigma0_polymath::{
+use charms_polymath::{
     blake3::Blake3Transcript, keccak256::Keccak256Transcript, merlin::MerlinFieldTranscript,
     Polymath, Transcript,
 };
@@ -70,6 +71,9 @@ where
         Polymath::<E, T>::verify(&vk, &[product], &proof).unwrap(),
         "Proof failed"
     );
+
+    dbg!(proof.a_g1.serialized_size(Compress::Yes));
+    dbg!(proof.a_at_x1.serialized_size(Compress::Yes));
 }
 
 #[test]

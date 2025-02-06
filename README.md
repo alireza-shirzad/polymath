@@ -1,4 +1,4 @@
-# `sigma0-polymath`
+# `charms-polymath`
 
 
 This is the first (as far as we know) implementation of the non-universal zk-SNARK described in the paper [Polymath: Groth16 Is Not The Limit](https://ia.cr/2024/916) by [Helger Lipmaa](https://x.com/HLipmaa).
@@ -10,16 +10,16 @@ Add the following to your project's Cargo.toml:
 ark-bls12-381 = { version = "0.4.0" }
 ark-crypto-primitives = { version = "0.4.0" }
 ark-relations = { version = "0.4.0" }
-sigma0-polymath = { git = "https://github.com/sigma0-xyz/polymath" }
+charms-polymath = { git = "https://github.com/CharmsDev/polymath" }
 ```
 
 You will be able to generate proving and verification keys, prove and verify your circuit.
 
 Specify a pairing-friendly curve and Fiat-Shamir transcript implementation you want to use:
 ```rust
-use sigma0_polymath::transcript::MerlinFieldTranscript;
+use charms_polymath::transcript::MerlinFieldTranscript;
 
-type Polymath = sigma0_polymath::Polymath<Bls12_381, MerlinFieldTranscript<Fr>>;
+type Polymath = charms_polymath::Polymath<Bls12_381, MerlinFieldTranscript<Fr>>;
 ```
 
 Implement an R1CS circuit:
@@ -70,7 +70,7 @@ Verify the proof against the public input:
 assert!(Polymath::verify(&vk, &[product], &proof).unwrap());
 ```
 
-See some end to end examples [here](https://github.com/sigma0-xyz/polymath/tree/main/tests).
+See some end to end examples [here](https://github.com/CharmsDev/polymath/tree/main/tests).
 
 ## Background
 

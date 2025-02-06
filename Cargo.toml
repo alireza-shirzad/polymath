@@ -1,5 +1,5 @@
 [package]
-name = "sigma0-polymath"
+name = "charms-polymath"
 description = "An implementation of Polymath zkSNARK"
 version = "0.4.0"
 keywords = [ "zero-knowledge", "cryptography", "zkSNARK", "SNARK", "Polymath" ]

@@ -9,7 +9,7 @@ use ark_relations::{
     lc,
     r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
 };
-use sigma0_polymath::{transcript::merlin::MerlinFieldTranscript, Polymath};
+use charms_polymath::{transcript::merlin::MerlinFieldTranscript, Polymath};
 
 const NUM_PROVE_REPETITIONS: usize = 1;
 const NUM_VERIFY_REPETITIONS: usize = 50;
@@ -69,7 +69,7 @@ macro_rules! groth16_prove_bench {
             num_variables: NUM_VARIABLES,
             num_constraints: NUM_CONSTRAINTS,
         };
-    // type Polymath = sigma0_polymath::Polymath<Bls12_381, MerlinFieldTranscript<Fr>>;
+    // type Polymath = charms_polymath::Polymath<Bls12_381, MerlinFieldTranscript<Fr>>;
 
         let (pk, _) = Polymath::<$bench_pairing_engine, MerlinFieldTranscript<$bench_field>>::circuit_specific_setup(c, rng).unwrap();
 
