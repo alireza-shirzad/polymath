@@ -1,4 +1,4 @@
-use ark_ec::{pairing::Pairing, CurveGroup, PrimeGroup};
+use ark_ec::{pairing::Pairing, CurveGroup};
 use ark_ff::PrimeField;
 use ark_poly::{EvaluationDomain, Radix2EvaluationDomain};
 use ark_relations::r1cs::{
@@ -13,7 +13,7 @@ use crate::{
     common::{SAPMatrices, MINUS_ALPHA, MINUS_GAMMA},
     PairingVK, Polymath, PolymathError, ProvingKey, Transcript, VerifyingKey,
 };
-
+use crate::ark_std::UniformRand;
 type D<F> = Radix2EvaluationDomain<F>;
 
 impl<F: PrimeField, E: Pairing, T> Polymath<E, T>
@@ -76,7 +76,7 @@ where
         let y_gamma = y.inverse().unwrap().pow([MINUS_GAMMA]);
         let z: F = domain.sample_element_outside_domain(rng);
 
-        let g1 = E::G1::generator();
+        let g1 = E::G1::rand(rng);
 
         let x_powers_g1_time = start_timer!(|| "Generating x_powers_g1");
         let x_powers_g1 = Self::generate(g1, n + bnd_a - 1, |j| x.pow([j]));
@@ -136,7 +136,7 @@ where
         };
         end_timer!(uj_wj_lcs_by_y_alpha_g1_time);
 
-        let g2 = E::G2::generator();
+        let g2 = E::G2::rand(rng);
 
         let e = PairingVK {
             one_g1: g1.into(),
