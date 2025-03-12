@@ -15,11 +15,11 @@
 #[macro_use]
 extern crate ark_std;
 
-use ark_crypto_primitives::snark::*;
 use ark_ec::pairing::Pairing;
 use ark_ff::PrimeField;
-use ark_relations::r1cs::{ConstraintSynthesizer, SynthesisError};
+use ark_relations::gr1cs::{ConstraintSynthesizer, SynthesisError};
 use ark_serialize::SerializationError;
+use ark_snark::{CircuitSpecificSetupSNARK, SNARK};
 use ark_std::{clone::Clone, fmt::Debug, marker::PhantomData, rand::RngCore, result::Result};
 
 pub use self::{data_structures::*, transcript::*};

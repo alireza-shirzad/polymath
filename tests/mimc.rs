@@ -15,17 +15,17 @@ use ark_std::time::{Duration, Instant};
 // Bring in some tools for using pairing-friendly curves
 // We're going to use the BLS12-381 pairing-friendly elliptic curve.
 use ark_bls12_381::{Bls12_381, Fr};
-use ark_crypto_primitives::snark::{CircuitSpecificSetupSNARK, SNARK};
 use ark_ff::Field;
 // We'll use these interfaces to construct our circuit.
 use ark_relations::{
     lc, ns,
-    r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError, Variable},
+    gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError, Variable},
 };
 use ark_std::test_rng;
 // For randomness (during paramgen and proof generation)
 use ark_std::rand::{Rng, RngCore, SeedableRng};
-
+use ark_snark::CircuitSpecificSetupSNARK;
+use ark_snark::SNARK;
 use charms_polymath::transcript::merlin::MerlinFieldTranscript;
 
 const MIMC_ROUNDS: usize = 322;
@@ -99,7 +99,7 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
             let tmp =
                 cs.new_witness_variable(|| tmp_value.ok_or(SynthesisError::AssignmentMissing))?;
 
-            cs.enforce_constraint(
+            cs.enforce_r1cs_constraint(
                 lc!() + xl + (self.constants[i], Variable::One),
                 lc!() + xl + (self.constants[i], Variable::One),
                 lc!() + tmp,
@@ -123,7 +123,7 @@ impl<'a, F: Field> ConstraintSynthesizer<F> for MiMCDemo<'a, F> {
                 cs.new_witness_variable(|| new_xl_value.ok_or(SynthesisError::AssignmentMissing))?
             };
 
-            cs.enforce_constraint(
+            cs.enforce_r1cs_constraint(
                 lc!() + tmp,
                 lc!() + xl + (self.constants[i], Variable::One),
                 lc!() + new_xl - xr,

@@ -1,15 +1,15 @@
 // Bring in some tools for using pairing-friendly curves
 // We're going to use the BLS12-381 pairing-friendly elliptic curve.
 use ark_bls12_381::{Bls12_381, Fr};
-use ark_crypto_primitives::snark::{CircuitSpecificSetupSNARK, SNARK};
 use ark_ec::pairing::Pairing;
 use ark_ff::Field;
 // We'll use these interfaces to construct our circuit.
 use ark_relations::{
     lc,
-    r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
+    gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
 };
 use ark_serialize::{CanonicalSerialize, Compress};
+use ark_snark::{CircuitSpecificSetupSNARK, SNARK};
 use ark_std::{test_rng, UniformRand};
 // For randomness (during paramgen and proof generation)
 use ark_std::rand::{RngCore, SeedableRng};
@@ -31,7 +31,7 @@ impl<F: Field> ConstraintSynthesizer<F> for DummyCircuit<F> {
         let c = self.a.and_then(|a| self.b.map(|b| a * b));
         let c = cs.new_input_variable(|| c.ok_or(SynthesisError::AssignmentMissing))?;
 
-        cs.enforce_constraint(lc!() + a, lc!() + b, lc!() + c)
+        cs.enforce_r1cs_constraint(lc!() + a, lc!() + b, lc!() + c)
     }
 }
 

@@ -1,9 +1,9 @@
+use crate::{to_bytes, Polymath, PolymathError, Transcript, VerifyingKey};
 use ark_ec::pairing::Pairing;
 use ark_ff::{Field, PrimeField};
-use ark_relations::r1cs::Matrix;
+use ark_relations::gr1cs::Matrix;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
-
-use crate::{to_bytes, Polymath, PolymathError, Transcript, VerifyingKey};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 pub const B_POLYMATH: &[u8; 8] = b"polymath";
 
@@ -132,6 +132,20 @@ impl<F: Field> SAPMatrices<F> {
         let (m0, m, n) = self.m0_m_n();
 
         ((m0 + n) * 2, m0 * 2 + m + n)
+    }
+
+    pub fn u_col(&self, j: usize, n: usize, m0: usize) -> Vec<(usize, F)> {
+        cfg_into_iter!(0..n)
+        .map(|i| (i, self.u(i, j + m0)))
+        .filter(|&(_, y)| y != F::zero()) // Assuming F implements `PartialEq` and has `zero()`
+        .collect::<Vec<(usize, F)>>()
+    }
+
+    pub fn w_col(&self, j: usize, n: usize, m0: usize) -> Vec<(usize, F)> {
+        cfg_into_iter!(0..n)
+            .map(|i| (i, self.w(i, j + m0)))
+        .filter(|&(_, y)| y != F::zero()) // Assuming F implements `PartialEq` and has `zero()`
+            .collect::<Vec<(usize, F)>>()
     }
 
     /// Get `Uᵢⱼ` element of the SAP `U` matrix.

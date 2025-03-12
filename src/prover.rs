@@ -4,7 +4,7 @@ use ark_poly::{
     univariate::{DenseOrSparsePolynomial, DensePolynomial, SparsePolynomial},
     DenseUVPolynomial, EvaluationDomain, Polynomial, Radix2EvaluationDomain,
 };
-use ark_relations::r1cs::{
+use ark_relations::gr1cs::{
     ConstraintSynthesizer, ConstraintSystem, OptimizationGoal, SynthesisError, SynthesisMode,
 };
 use ark_std::{cfg_into_iter, iterable::Iterable, ops::Mul, rand::RngCore, Zero};
@@ -102,7 +102,7 @@ where
         let w_poly = DensePolynomial::from_coefficients_vec(w_coeffs);
 
         let h_numerator_poly = u2_poly + -w_poly;
-        let (h_poly, rem_poly) = h_numerator_poly.divide_by_vanishing_poly(domain).unwrap();
+        let (h_poly, rem_poly) = h_numerator_poly.divide_by_vanishing_poly(domain);
 
         assert!(!h_poly.is_zero() && h_poly.degree() <= n - 2);
         assert!(rem_poly.is_zero());

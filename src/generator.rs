@@ -1,8 +1,9 @@
-use ark_ec::{pairing::Pairing, CurveGroup};
+use ark_ec::{pairing::Pairing, scalar_mul::BatchMulPreprocessing, CurveGroup};
 use ark_ff::PrimeField;
 use ark_poly::{EvaluationDomain, Radix2EvaluationDomain};
-use ark_relations::r1cs::{
+use ark_relations::gr1cs::{
     ConstraintSynthesizer, ConstraintSystem, OptimizationGoal, SynthesisError, SynthesisMode,
+    R1CS_PREDICATE_LABEL,
 };
 use ark_std::{cfg_into_iter, rand::RngCore};
 
@@ -10,10 +11,10 @@ use ark_std::{cfg_into_iter, rand::RngCore};
 use rayon::prelude::*;
 
 use crate::{
+    ark_std::UniformRand,
     common::{SAPMatrices, MINUS_ALPHA, MINUS_GAMMA},
     PairingVK, Polymath, PolymathError, ProvingKey, Transcript, VerifyingKey,
 };
-use crate::ark_std::UniformRand;
 type D<F> = Radix2EvaluationDomain<F>;
 
 impl<F: PrimeField, E: Pairing, T> Polymath<E, T>
@@ -43,14 +44,14 @@ where
 
         ///////////////////////////////////////////////////////////////////////////
 
-        let r1cs_matrices = cs.to_matrices().unwrap();
+        let r1cs_matrices = cs.to_matrices().unwrap()[R1CS_PREDICATE_LABEL].clone();
         let sap_matrices = SAPMatrices {
-            num_instance_variables: r1cs_matrices.num_instance_variables,
-            num_r1cs_witness_variables: r1cs_matrices.num_witness_variables,
-            num_r1cs_constraints: r1cs_matrices.num_constraints,
-            a: r1cs_matrices.a,
-            b: r1cs_matrices.b,
-            c: r1cs_matrices.c,
+            num_instance_variables: cs.num_instance_variables(),
+            num_r1cs_witness_variables: cs.num_witness_variables(),
+            num_r1cs_constraints: cs.num_constraints(),
+            a: r1cs_matrices[0].clone(),
+            b: r1cs_matrices[1].clone(),
+            c: r1cs_matrices[2].clone(),
         };
 
         ///////////////////////////////////////////////////////////////////////////
@@ -111,24 +112,17 @@ where
         let uj_wj_lcs_by_y_alpha_g1_time = start_timer!(|| "Generating uj_wj_lcs_by_y_alpha_g1");
         let uj_wj_lcs_by_y_alpha_g1 = {
             let l_at_x = domain.evaluate_all_lagrange_coefficients(x);
-
             Self::generate(g1, m - m0 - 1, |j| {
-                let uj_evals: Vec<F> = cfg_into_iter!(0..n)
-                    .map(|i| sap_matrices.u(i, j as usize + m0))
-                    .collect();
+                let uj_evals = sap_matrices.u_col(j as usize, n, m0);
                 debug_assert_eq!(uj_evals.len(), l_at_x.len());
-                let wj_evals: Vec<F> = cfg_into_iter!(0..n)
-                    .map(|i| sap_matrices.w(i, j as usize + m0))
-                    .collect();
+                let wj_evals = sap_matrices.w_col(j as usize, n, m0);
                 debug_assert_eq!(wj_evals.len(), l_at_x.len());
 
-                let uj_x = cfg_iter!(l_at_x)
-                    .zip(uj_evals)
-                    .map(|(&l, uj)| l * &uj)
+                let uj_x = cfg_iter!(uj_evals)
+                    .map(|(i, uij)| l_at_x[*i] * uij)
                     .sum::<F>();
-                let wj_x = cfg_iter!(l_at_x)
-                    .zip(wj_evals)
-                    .map(|(&l, wj)| l * &wj)
+                let wj_x = cfg_iter!(wj_evals)
+                    .map(|(i, wij)| l_at_x[*i] * wij)
                     .sum::<F>();
 
                 (uj_x * &y_gamma + wj_x) * &y_to_minus_alpha
@@ -171,8 +165,8 @@ where
         G: CurveGroup,
         M: Fn(u64) -> G::ScalarField,
     {
-        (0..max_index + 1)
-            .map(|j| (g * f(j as u64)).into())
-            .collect()
+        let table = BatchMulPreprocessing::new(g, max_index);
+        let exps: Vec<G::ScalarField> = (0..max_index + 1).map(|j| (f(j as u64))).collect();
+        table.batch_mul(&exps)
     }
 }

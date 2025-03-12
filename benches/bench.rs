@@ -3,18 +3,18 @@
 // where N is the number of threads you want to use (N = 1 for single-thread).
 
 use ark_bls12_381::{Bls12_381, Fr as BlsFr};
-use ark_crypto_primitives::snark::SNARK;
 use ark_ff::{PrimeField, UniformRand};
 use ark_relations::{
     lc,
-    r1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
+    gr1cs::{ConstraintSynthesizer, ConstraintSystemRef, SynthesisError},
 };
+use ark_snark::SNARK;
 use charms_polymath::{transcript::merlin::MerlinFieldTranscript, Polymath};
 
 const NUM_PROVE_REPETITIONS: usize = 1;
 const NUM_VERIFY_REPETITIONS: usize = 50;
-const NUM_CONSTRAINTS: usize = (1 << 20) - 100;
-const NUM_VARIABLES: usize = (1 << 20) - 100;
+const NUM_CONSTRAINTS: usize = (1 << 10);
+const NUM_VARIABLES: usize = (1 << 10);
 
 #[derive(Copy)]
 struct DummyCircuit<F: PrimeField> {
@@ -51,10 +51,10 @@ impl<F: PrimeField> ConstraintSynthesizer<F> for DummyCircuit<F> {
         }
 
         for _ in 0..self.num_constraints - 1 {
-            cs.enforce_constraint(lc!() + a, lc!() + b, lc!() + c)?;
+            cs.enforce_r1cs_constraint(lc!() + a, lc!() + b, lc!() + c)?;
         }
 
-        cs.enforce_constraint(lc!(), lc!(), lc!())?;
+        cs.enforce_r1cs_constraint(lc!(), lc!(), lc!())?;
 
         Ok(())
     }
