@@ -18,12 +18,12 @@ ark-serialize = { version = "0.5.0", default-features = false, features = [
 ] }
 ark-poly = { version = "0.5.0", default-features = false }
 ark-std = { version = "0.5.0", default-features = false }
-ark-relations = { path = "../snark/relations", default-features = false }
-ark-snark = {  path = "../snark/snark", default-features = false }
-ark-crypto-primitives = { path = "../crypto-primitives/crypto-primitives", default-features = false, features = [
+ark-relations = { git = "https://github.com/alireza-shirzad/snark.git", default-features = false }
+ark-snark = { git = "https://github.com/alireza-shirzad/snark.git", default-features = false }
+ark-crypto-primitives = { git = "https://github.com/alireza-shirzad/crypto-primitives.git", default-features = false, features = [
     "sponge",
 ] }
-ark-r1cs-std = { path = "../r1cs-std", default-features = false, optional = true }
+ark-r1cs-std = { git = "https://github.com/alireza-shirzad/r1cs-std.git", default-features = false, optional = true }
 #flexible-transcript = { version = "0.3.2", default-features = false }
 thiserror = { version = "1.0", default-features = false }
 
@@ -47,7 +47,7 @@ hex = "0.4.3"
 #ark-mnt6-298 = { version = "0.5.0", default-features = false, features = ["r1cs"] }
 #ark-mnt4-753 = { version = "0.5.0", default-features = false, features = ["r1cs", "curve"] }
 #ark-mnt6-753 = { version = "0.5.0", default-features = false, features = ["r1cs"] }
-ark-r1cs-std = { path = "../r1cs-std", default-features = false }
+ark-r1cs-std = { git = "https://github.com/alireza-shirzad/r1cs-std.git", default-features = false }
 proptest = { version = "1.0.0" }
 
 [features]
