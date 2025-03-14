@@ -1,4 +1,4 @@
-use ark_ec::{pairing::Pairing, VariableBaseMSM};
+use ark_ec::{pairing::Pairing, AffineRepr, VariableBaseMSM};
 use ark_ff::PrimeField;
 use ark_std::One;
 
@@ -31,30 +31,28 @@ where
         // compute y1=x1^sigma
         let y1: F = Self::compute_y1(x1, vk.sigma);
 
-        let y1_gamma = Self::neg_power(y1, MINUS_GAMMA);
+        let y_inverse = y1.inverse().unwrap();
+        let y1_gamma = y_inverse.pow([MINUS_GAMMA]);
+        let y1_alpha = y_inverse.pow([MINUS_ALPHA]);
         let pi_at_x1 = Self::compute_pi_at_x1(vk, public_inputs, x1, y1_gamma);
-
-        let y1_alpha = Self::neg_power(y1, MINUS_ALPHA);
 
         // compute c_at_x1
         let c_at_x1 = Self::compute_c_at_x1(y1_gamma, y1_alpha, proof.a_at_x1, pi_at_x1);
 
         let x2 = Self::compute_x2(&mut t, &x1, &[proof.a_at_x1, c_at_x1])?;
 
-        let commitments_minus_evals_in_g1 = E::G1::msm_unchecked(
-            &[proof.a_g1, proof.c_g1, vk.e.one_g1],
-            &[F::one(), x2, -(proof.a_at_x1 + x2 * c_at_x1)],
-        );
-        let x_minus_x1_in_g2 = E::G2::msm_unchecked(&[vk.e.x_g2, vk.e.one_g2], &[F::one(), -x1]);
-
+        let commitments_minus_evals_in_g1 = proof.a_g1 - proof.c_g1 * x2 - vk.e.one_g1 * (proof.a_at_x1 + x2 * c_at_x1);
+        
+        let x_minus_x1_in_g2 = vk.e.x_g2 - vk.e.one_g2 * x1;
+        
         let pairing_output = E::multi_pairing(
             [
-                <E::G1 as Into<E::G1Prepared>>::into(commitments_minus_evals_in_g1),
-                <E::G1 as Into<E::G1Prepared>>::into(proof.d_g1 * (-F::one())),
+                commitments_minus_evals_in_g1.into(),
+                (-(proof.d_g1.into_group())).into(),
             ],
             [
-                <E::G2 as Into<E::G2Prepared>>::into(vk.e.z_g2.into()),
-                <E::G2 as Into<E::G2Prepared>>::into(x_minus_x1_in_g2),
+                vk.e.z_g2.clone(),
+                x_minus_x1_in_g2.into().into(),
             ],
         );
 

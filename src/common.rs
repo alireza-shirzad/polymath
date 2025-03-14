@@ -147,7 +147,7 @@ impl<F: Field> SAPMatrices<F> {
         .filter(|&(_, y)| y != F::zero()) // Assuming F implements `PartialEq` and has `zero()`
             .collect::<Vec<(usize, F)>>()
     }
-
+    
     /// Get `Uᵢⱼ` element of the SAP `U` matrix.
     pub fn u(&self, i: usize, j: usize) -> F {
         let (m0, m, n) = self.m0_m_n();

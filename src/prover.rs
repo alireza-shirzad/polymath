@@ -279,16 +279,14 @@ where
     fn compute_y_vec(pk: &ProvingKey<E>, x: &[F], w: &[F]) -> Vec<F> {
         let zero = F::zero();
         let one = F::one();
-        let y_m0: Vec<F> = (1..pk.sap_matrices.num_instance_variables)
+        let (a, b) = (&pk.sap_matrices.a, &pk.sap_matrices.b);
+        let y_m0: Vec<F> = [F::zero()].into_iter().chain((1..pk.sap_matrices.num_instance_variables)
             .map(|j| {
                 let v = one - x[j];
                 v * v
-            })
-            .collect();
-
-        let (a, b) = (&pk.sap_matrices.a, &pk.sap_matrices.b);
-
-        let y_n: Vec<F> = (0..pk.sap_matrices.num_r1cs_constraints)
+            }))
+            .chain(
+                (0..pk.sap_matrices.num_r1cs_constraints)
             .map(|i| {
                 let num_r1cs_columns = pk.sap_matrices.num_instance_variables
                     + pk.sap_matrices.num_r1cs_witness_variables;
@@ -297,12 +295,12 @@ where
                     .fold(zero, |x, y| x + y);
                 v * v
             })
+            )
             .collect();
-        [vec![F::zero()], y_m0, y_n].concat()
+        y_m0
     }
 
-    fn combined_v_at(vectors: &[&[F]], j: usize) -> F {
-        let mut j = j;
+    fn combined_v_at(vectors: &[&[F]], mut j: usize) -> F {
         for &v in vectors {
             if j < v.len() {
                 return v[j];

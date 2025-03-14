@@ -30,7 +30,7 @@ pub struct PairingVK<E: Pairing> {
     /// `[x]₂` - the `x` trapdoor (toxic random secret) hidden in `G2`.
     pub x_g2: E::G2Affine,
     /// `[z]₂` - the `z` trapdoor (toxic random secret) hidden in `G2`.
-    pub z_g2: E::G2Affine,
+    pub z_g2: E::G2Prepared,
 }
 
 /// Verification key in the Polymath zkSNARK.

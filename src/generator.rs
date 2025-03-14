@@ -136,7 +136,7 @@ where
             one_g1: g1.into(),
             one_g2: g2.into(),
             x_g2: (g2 * &x).into(),
-            z_g2: (g2 * &z).into(),
+            z_g2: (g2 * &z).into().into(),
         };
 
         end_timer!(setup_time);
